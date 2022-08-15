@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  cloudquery:
+    build:
+      context: cloudquery/
+      args:
+        CLOUDQUERY_VERSION: $CLOUDQUERY_VERSION
+    hostname: cloudquery
+    container_name: cloudquery
+    environment:
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - AZURE_TENANT_ID=$AZURE_TENANT_ID
+      - AZURE_CLIENT_ID=$AZURE_CLIENT_ID
+      - AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET
+      - AZURE_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID
+      - GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+    volumes:
+      - type: bind
+        source: ./cloudquery/config/cloudquery.yml
+        target: /config/cloudquery.yml
+      - type: bind
+        source: ./data/cloudquery
+        target: /cache/.cq
+    networks:
+      - cloudquery-network
+
+  cq-postgres:
+    build:
+      context: postgres/
+      args:
+        POSTGRES_VERSION: $POSTGRES_VERSION
+    hostname: cq-postgres
+    container_name: cq-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: cqdb
+      POSTGRES_USER: cquser
+      POSTGRES_PASSWORD: cqpass
+    volumes:
+      - type: volume
+        source: cq-postgres
+        target: /var/lib/postgresql/data
+    networks:
+      - cloudquery-network
+
+networks:
+  cloudquery-network:
+    driver: bridge
+
+volumes:
+  cq-postgres:

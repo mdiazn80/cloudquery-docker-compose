@@ -1,0 +1,3 @@
+ARG CLOUDQUERY_VERSION
+
+FROM ghcr.io/cloudquery/cloudquery:${CLOUDQUERY_VERSION}
